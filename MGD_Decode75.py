@@ -1,4 +1,4 @@
-def MGD_Decode75_1200(inArray):
+def MGD_Decode75(inArray):
 	# Modified Gray Decodes the input data into symbols ready to scramble
 	mgd = []
 	for i in range(len(inArray)): # converts binary to Gray
