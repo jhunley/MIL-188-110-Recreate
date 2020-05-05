@@ -13,7 +13,6 @@ def InterleaveBits(inArray,inter_len=90,numrows=10,numcols=9,rowinc=7,rowincmod=
 	col = 0
 	inter_out = []
 	temp = []
-	print(fetch_num)
 	interleave_matrix = initialize_matrix(None) # initialize vars
 	for i in range(0,len(inArray),inter_len): # fill/fetch loop
 		for i in range(numcols): # fill loop
@@ -33,8 +32,7 @@ def InterleaveBits(inArray,inter_len=90,numrows=10,numcols=9,rowinc=7,rowincmod=
 			bitIndex += rowincmod
 		for i in range(inter_len): # bit fetching loop
 			if fetch_num == 1:
-				inter_out.append(temp)
-				temp = []
+				inter_out.append(str(interleave_matrix[row][col]))
 			elif fetch_num == 2:
 				if len(temp) < 2:
 					temp.append(interleave_matrix[row][col])
@@ -47,7 +45,7 @@ def InterleaveBits(inArray,inter_len=90,numrows=10,numcols=9,rowinc=7,rowincmod=
 				if len(temp) < 3:
 					temp.append(interleave_matrix[row][col])
 				elif len(temp) == 3:
-					inter_out.extend(str(temp[0])+str(temp[1])+str(temp[2]))
+					inter_out.append(str(temp[0])+str(temp[1])+str(temp[2]))
 					temp = []
 				else:
 					raise ValueError("Something went VERY WRONG2")
