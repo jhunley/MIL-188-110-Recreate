@@ -13,7 +13,7 @@ def InterleaveBits(inArray,inter_len=90,numrows=10,numcols=9,rowinc=7,rowincmod=
 	col = 0
 	inter_out = []
 	temp = []
-	interleave_matrix = initialize_matrix(None) # initialize vars
+	interleave_matrix = initialize_matrix(None,numrows,numcols) # initialize vars
 	for i in range(0,len(inArray),inter_len): # fill/fetch loop
 		for i in range(numcols): # fill loop
 			row = 0
