@@ -1,7 +1,7 @@
 def EncodeInputText(instring, inter_len=90):
 	asciitemp = []
 	for char in instring:
-		asciitemp.append(bin(ord(char))[2:])
+		asciitemp.append(bin(ord(char))[2:].zfill(8))
 	indata = []
 	for i in range(len(asciitemp)):
 		for bit in asciitemp[i]:
