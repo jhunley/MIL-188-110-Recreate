@@ -8,4 +8,6 @@ You then manually run wavfile.write() (from scipy), so that you can choose your 
 
 Currently in the process of making the functions adaptable to all the different submodes (they are currently hardcoded to 75Bd, short interleave), as well as cleaning up the code and its inefficiencies.
 
+-> Me, three years later: Well that was a lie
+
 
