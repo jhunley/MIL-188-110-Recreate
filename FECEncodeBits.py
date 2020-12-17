@@ -24,20 +24,17 @@ def FECEncodeBits(inArray,Bd):
 			fec_out[x+5] = fec_buffer[0] ^ fec_buffer[1] ^ fec_buffer[2] ^ fec_buffer[3] ^ fec_buffer[6]
 			fec_out[x+6] = fec_buffer[0] ^ fec_buffer[2] ^ fec_buffer[3] ^ fec_buffer[5] ^ fec_buffer[6]
 			fec_out[x+7] = fec_buffer[0] ^ fec_buffer[1] ^ fec_buffer[2] ^ fec_buffer[3] ^ fec_buffer[6]
+                        x += 8
 		elif Bd == 300:
 			fec_out[x] = fec_buffer[0] ^ fec_buffer[2] ^ fec_buffer[3] ^ fec_buffer[5] ^ fec_buffer[6]
 			fec_out[x+1] = fec_buffer[0] ^ fec_buffer[1] ^ fec_buffer[2] ^ fec_buffer[3] ^ fec_buffer[6]
 			fec_out[x+2] = fec_buffer[0] ^ fec_buffer[2] ^ fec_buffer[3] ^ fec_buffer[5] ^ fec_buffer[6]
 			fec_out[x+3] = fec_buffer[0] ^ fec_buffer[1] ^ fec_buffer[2] ^ fec_buffer[3] ^ fec_buffer[6]
+                        x += 4
 		elif Bd == 600 or Bd == 1200 or Bd == 2400 or Bd == 75:
 			fec_out[x] = fec_buffer[0] ^ fec_buffer[2] ^ fec_buffer[3] ^ fec_buffer[5] ^ fec_buffer[6]
 			fec_out[x+1] = fec_buffer[0] ^ fec_buffer[1] ^ fec_buffer[2] ^ fec_buffer[3] ^ fec_buffer[6]
-		if Bd == 600 or Bd == 1200 or Bd == 2400 or Bd == 75:
-			x += 2
-		elif Bd == 300:
-			x += 4
-		elif Bd == 150:
-			x += 8
+                        x += 2
 		fec_buffer[5] = fec_buffer[4]
 		fec_buffer[4] = fec_buffer[3]
 		fec_buffer[3] = fec_buffer[2]
