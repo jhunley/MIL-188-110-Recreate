@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.io.wavfile as wavfile
 
+samplerate = 384000
+PreambleRandomizerSeq = [7, 4, 3, 0, 5, 1, 5, 0, 2, 2, 1, 1, 5, 7, 4, 3, 5, 0, 2, 6, 2, 1, 6, 2, 0, 0, 5, 0, 5, 2, 6, 6]
 x = np.arange(160)
 x = x / 384000
 f_c = 1800
@@ -66,7 +68,6 @@ def PreambleGenerate(data_array, bps, interleave_len, dtyp = "Data"):
 				C3 = 0b111
 			data_array = np.append(data_array, [C1, C2, C3, 0b000])
 			count -= 1
-		return data_array
 	elif interleave_len == "L":
 		count = 23
 		while count >= 0:
@@ -119,7 +120,8 @@ def PreambleGenerate(data_array, bps, interleave_len, dtyp = "Data"):
 				C3 = 0b111
 			data_array = np.append(data_array, [C1, C2, C3, 0b000])
 			count -= 1
-		return data_array
 	else:
 		raise RuntimeError("Invalid input.")
+	for i, sym in enumerate(PreambleArray):
+		PreambleArray[i] = (PreambleArray[i] + PreambleRandomizerSeq[i % 32]) % 8
 
