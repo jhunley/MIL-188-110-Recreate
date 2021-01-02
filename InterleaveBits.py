@@ -1,59 +1,68 @@
-def InterleaveBits(inArray,inter_len=90,numrows=10,numcols=9,rowinc=7,rowincmod=10,coldec=7,fetch_num=2):
-	# Use an interleaving matrix to scramble the bit order.
-	# MIL-STD-188-110 defines the interleave process as such:
-	# Fill (0,0) of a 10 row x 9 col matrix with the first bit, then increment
-	# the row by 7 mod 10. When that row is full, rotate the cols right once, and
-	# repeat the process until the matrix is full. Once full, fetch the bits thusly:
-	# Fetch the bit at (0,0). Then, move down one row, and right 2 mod 9 (described
-	# in the paper as left 7 mod 9), and repeat until you reach the bottom of the matrix.
-	# Go back to row 0, and a column to the right of the one you were at last time you were
-	# at row 0; rinse and repeat until the matrix is empty again. Now to fill with more bits!
-	bitIndex = 0
-	row = 0
-	col = 0
-	inter_out = []
-	temp = []
-	interleave_matrix = initialize_matrix(None,numrows,numcols) # initialize vars
-	for i in range(0,len(inArray),inter_len): # fill/fetch loop
-		for i in range(numcols): # fill loop
-			row = 0
-			if ((bitIndex+rowincmod) >= len(inArray)):
-				for j in range(bitIndex,len(inArray)): # row filling loop
-					interleave_matrix[row][0] = inArray[j]
-					row = (row+rowinc)%rowincmod
-				for j in range(numrows): # column shifting loop
-					interleave_matrix[j] = interleave_matrix[j][-1:] + interleave_matrix[j][:-1]
-			else:
-				for j in range(bitIndex,bitIndex+rowincmod): # row filling loop
-					interleave_matrix[row][0] = inArray[j]
-					row = (row+rowinc)%rowincmod
-				for j in range(numrows): # column shifting loop
-					interleave_matrix[j] = interleave_matrix[j][-1:] + interleave_matrix[j][:-1]
-			bitIndex += rowincmod
-		for i in range(inter_len): # bit fetching loop
-			if fetch_num == 1:
-				inter_out.append(str(interleave_matrix[row][col]))
-			elif fetch_num == 2:
-				if len(temp) < 2:
-					temp.append(interleave_matrix[row][col])
-				elif len(temp) == 2:
-					inter_out.append(str(temp[0])+str(temp[1]))
-					temp = []
-				else:
-					raise ValueError("Something went VERY WRONG1")
-			elif fetch_num == 3:
-				if len(temp) < 3:
-					temp.append(interleave_matrix[row][col])
-				elif len(temp) == 3:
-					inter_out.append(str(temp[0])+str(temp[1])+str(temp[2]))
-					temp = []
-				else:
-					raise ValueError("Something went VERY WRONG2")
-			row += 1
-			if row == (numrows-1):
-				row = 0
-			elif row < (numrows-1):
-				col = (col - coldec) % numcols
-			else:
-				raise ValueError("Math may be hard")
-	return inter_out
+def InterleaveChunk(inchunk, Bd=75, interleave_len="S"):
+	
+	if interleave_len == "Z":
+		return inchunk
+	elif Bd == 75 and interleave_len == "S":
+		numrows = 10
+		numcols = 9
+	elif Bd == 75 and interleave_len == "L":
+		numrows = 20
+		numcols = 36
+	elif (Bd == 150 or Bd == 300 or Bd == 600) and interleave_len == "S":
+		numrows = 40
+		numcols = 18
+	elif (Bd == 150 or Bd == 300 or Bd == 600) and interleave_len == "L":
+		numrows = 40
+		numcols = 144
+	elif Bd == 1200 and interleave_len == "S":
+		numrows = 40
+		numcols = 36
+	elif Bd == 1200 and interleave_len == "L":
+		numrows = 40
+		numcols = 288
+	elif Bd == 2400 and interleave_len == "S":
+		numrows = 40
+		numcols = 72
+	elif Bd == 2400 and interleave_len == "L":
+		numrows = 40
+		numcols = 576
+	else:
+		raise RuntimeError("Invalid input.")
+
+	if len(inchunk) != (numrows * numcols):
+		raise RuntimeError("The input chunk doesn't fit in the interleave matrix.")
+	inchunk = np.flip(inchunk)
+	i = 0
+	rownum = 0
+	colnum = 0
+	temp = np.zeros(x.shape)
+	out = np.zeros(x.shape)
+
+	while i < numrows * numcols:
+		count = 0
+		while count < numrows:
+			temp[colnum + numcols * rownum] = inchunk[i]
+			rownum = (rownum + 7) % numrows
+			count += 1
+			i += 1
+		rownum = 0
+		colnum += 1
+
+	i = 0
+	rownum = 0
+	colnum = 0
+	del count
+
+	while i < numrows * numcols:
+		lastcolnum = colnum
+		while rownum < numrows:
+			out[i] = temp[colnum + numcols * rownum]
+			rownum += 1
+			colnum = (colnum - 7) % numcols
+			i += 1
+		rownum = 0
+		colnum = lastcolnum + 1
+		lastcolnum = colnum
+
+	out = np.flip(out)
+	return out
