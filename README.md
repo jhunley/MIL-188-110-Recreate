@@ -10,4 +10,4 @@ Currently in the process of making the functions adaptable to all the different 
 
 -> Me, three years later: Well that was a lie
 
-
+The standard used is available here: https://www.sigidwiki.com/images/c/c8/MIL-STD-188_110C_CHG_NOTICE-1.pdf
