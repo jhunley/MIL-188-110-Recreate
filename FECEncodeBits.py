@@ -3,7 +3,7 @@ def FECEncodeBits(inArray,Bd):
 	# MIL-STD-188-110 specifies a scheme that returns two bits from every one
 	# input bit. The even bits are encoded using x^6+x^4+x^3+x+1, and
 	# the odd bits are encoded using x^6+x^5+x^4+x^3+1.
-	fec_reg = [0, 0, 0, 0, 0, 0, 1] # Initialize the register
+	fec_buffer = [0, 0, 0, 0, 0, 0, 1] # Initialize the buffer
 	x = 0 # initialize FEC output pointer
 	if Bd == 600 or Bd == 1200 or Bd == 2400 or Bd == 75:
 		fec_out = [None]*(len(inArray)*2)
