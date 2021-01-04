@@ -11,5 +11,5 @@ def EncodeInputText(instring, inter_len=90):
 	indata.extend(([0]*144))
 	while ((len(indata)%inter_len)!=0):
 		indata.append(0)
-        indata = np.flip(np.array(indata)) // feed it in the right direction
+        indata = np.flip(np.array(indata)) # feed it in the right direction
 	return indata
