@@ -46,6 +46,7 @@ def MGD_Decode(indata, Bd):
                 out[i] = 5
             else:
                 raise RuntimeError("Invalid symbol in bitstream.")
+        return out
     else:
         raise RuntimeError("Invalid input.")
     
