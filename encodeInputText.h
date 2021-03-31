@@ -10,6 +10,6 @@ static const byte EOM[] = { 0x4b, 0x4b, 0x4b, 0x4b, 0x4b, 0x4b, 0x4b, 0x4b, 0x4b
 
 
 
-void encodeInputText(std::vector<byte>* datastream, size_t inter_len);
+size_t encodeInputText(std::vector<byte>* datastream, size_t inter_len);
 
 #endif
