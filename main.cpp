@@ -3,7 +3,7 @@
 #include "Types.h"
 #include "encodeInputText.h"
 #include "fecEncodeBits.h"
-//#include "interleaveBits.h"
+#include "interleaveBits.h"
 
 int main()
 {
@@ -15,6 +15,8 @@ int main()
 	size_t bitlen = encodeInputText(&datastream, inter_len);
 
 	bitlen = fecEncodeBits(&datastream, 75, bitlen);
+
+	interleave_data(&datastream, 75, _short, bitlen);
 
 	for (int i = 0; i < datastream.size(); i++)
 	{
