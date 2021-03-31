@@ -4,16 +4,16 @@
 #include "Types.h"
 #include "interleaveBits.h"
 
-void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols)
+void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols, byte offset)
 {
-	if (chunk->size() != (numcols * numrows))
+	if (chunk->size() != ((numcols * numrows) / 8))
 	{
 		std::cerr << "The input chunk doesn't fit in the interleave matrix. How did you do this?\n\n";
 		exit(1);
 	}
 
 	size_t i = 0, rownum = 0, colnum = 0;
-	std::vector<byte> temp(chunk->size()), out(chunk->size());
+	std::vector<byte> temp(chunk->size());
 
 	while (i < (numrows * numcols))
 	{
@@ -21,7 +21,7 @@ void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols)
 
 		while (count < numrows)
 		{
-			setBitVal(&temp, (colnum + numcols * rownum), getBitVal(*chunk, i));
+			setBitVal(&temp, (colnum + numcols * rownum), getBitVal(*chunk, i + offset));
 			rownum = (rownum + 7) % numrows;
 			count++; i++;
 		}
@@ -41,7 +41,7 @@ void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols)
 
 		while (rownum < numrows)
 		{
-			setBitVal(&out, i, getBitVal(temp, (colnum + numcols * rownum)));
+			setBitVal(chunk, i + offset, getBitVal(temp, (colnum + numcols * rownum)));
 			rownum++;
 			colnum = (colnum - 7) % numcols;
 			i++;
@@ -49,13 +49,15 @@ void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols)
 
 		rownum = 0;
 		colnum = lastcolnum + 1;
-
 	}
+	return;
 }
 
-void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len chunklen)
+void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len chunklen, size_t bitlen)
 {
 	size_t numrows, numcols;
+	byte tempmask[2];
+	byte offset;
 
 	switch (baud)
 	{
@@ -147,18 +149,30 @@ void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len 
 
 	size_t z = numcols * numrows;
 
-	if ((datastream->size() % z) != 0)
+	if ((bitlen % z) != 0)
 	{
 		std::cerr << "The input data does not fit evenly into the interleaver. Check upstream! (interleave_data)\n\n";
 		exit(1);
 	}
 
-	std::vector<byte> temp(z);
+	std::vector<byte> temp((z / 8) + ((z % 8 != 0) ? 1 : 0));
 
-	for (size_t i = 0; i < datastream->size() * 8; i += z)
+	for (size_t i = 0; i < bitlen; i += z)
 	{
-		temp = std::vector<byte>(datastream->begin() + i, datastream->begin() + i + z);
-		interleave_chunk(&temp, numrows, numcols);
+		temp = std::vector<byte>(datastream->begin() + (i / 8), datastream->begin() + ((i + z) / 8));
+		offset = (i % 8);
+
+		temp[0] &= ((i % 8 == 0) ? 0xff : ~(0x80 >> ((i % 8) - 1)));
+		temp[(z / 8) - 1] &= ((i % 8 == 0) ? 0xff : (0x80 >> ((i & 8) - 1)));
+
+		interleave_chunk(&temp, numrows, numcols, offset);
+
+		tempmask[0] = datastream->at((i / 8)) & ((i % 8 == 0) ? 0xff : (0x80 >> ((i & 8) - 1)));
+		tempmask[1] = datastream->at((i + z) / 8) & (((i + z) % 8 == 0) ? 0xff : ~(0x80 >> (((i + z) % 8) - 1)));
+
+		temp[0] |= tempmask[0];
+		temp[(z / 8) - 1] |= tempmask[1];
+
 		std::copy(std::begin(temp), std::end(temp), std::begin(*datastream) + i);
 	}
 
