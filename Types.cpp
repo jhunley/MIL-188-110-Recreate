@@ -4,7 +4,7 @@
 
 byte getBitVal(std::vector<byte> stream, size_t idx)
 {
-	if (idx < 0 || idx * 8 >= stream.size())
+	if (idx < 0 || idx > (stream.size() * 8))
 	{
 		std::cerr << "FEC index out of bounds. (getBitVal)\n\n";
 		std::cerr << "stream:\n";
