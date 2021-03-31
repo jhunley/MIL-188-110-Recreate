@@ -12,9 +12,9 @@ int main()
 
 	size_t inter_len = 90;
 
-	encodeInputText(&datastream, inter_len);
+	size_t bitlen = encodeInputText(&datastream, inter_len);
 
-	fecEncodeBits(&datastream, 75);
+	bitlen = fecEncodeBits(&datastream, 75, bitlen);
 
 	for (int i = 0; i < datastream.size(); i++)
 	{
