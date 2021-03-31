@@ -6,7 +6,7 @@ byte getBitVal(std::vector<byte> stream, size_t idx)
 {
 	if (idx < 0 || idx > (stream.size() * 8))
 	{
-		std::cerr << "FEC index out of bounds. (getBitVal)\n\n";
+		std::cerr << "Stream index out of bounds. (getBitVal)\n\n";
 		std::cerr << "stream:\n";
 		for (size_t i = 0; i < stream.size(); i++)
 		{
@@ -32,7 +32,7 @@ void setBitVal(std::vector<byte>* stream, size_t idx, byte val)
 {
 	if ((idx < 0) || (idx >= stream->size() * 8))
 	{
-		std::cerr << "FEC index out of bounds. (getBitVal)\n\n";
+		std::cerr << "Stream index out of bounds. (setBitVal)\n\n";
 		std::cerr << "stream:\n";
 		for (size_t i = 0; i < stream->size(); i++)
 		{
