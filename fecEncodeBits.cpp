@@ -3,10 +3,10 @@
 #include "fecEncodeBits.h"
 #include "Types.h"
 
-void fecEncodeBits(std::vector<byte>* datastream, size_t baud)
+size_t fecEncodeBits(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 {
 	byte fec_buffer = 0, fec_mask = 0x7f;
-	byte valbuf[2];
+	byte valbuf;
 	byte p1mask = 0x5b;
 	byte p2mask = 0x79;
 	byte p1tmp, p2tmp, p1out, p2out;
@@ -37,14 +37,13 @@ void fecEncodeBits(std::vector<byte>* datastream, size_t baud)
 
 	case 4800:
 	{
-		return;
+		return bitlen;
 	}
 	}
 
-	std::vector<byte> fec_out(datastream->size() * outsize);
+	std::vector<byte> fec_out(((bitlen * outsize) / 8) + (((bitlen * outsize) % 8 != 0) ? 1 : 0));
 
-	valbuf[0] = datastream->at(0);
-	valbuf[1] = datastream->at(1);
+	valbuf = datastream->at(0);
 
 	/*
 					HERE BE DRAGONS
@@ -54,9 +53,10 @@ void fecEncodeBits(std::vector<byte>* datastream, size_t baud)
 					education, foresight, or wisdom. Proceed with caution.
 	*/
 
-	fec_buffer = fec_buffer & ((valbuf[0] & 0x80) >> 1) | 1;
+	fec_buffer = fec_buffer & ((valbuf & 0x80) >> 1) | 1;
+	valbuf <<= 1;
 
-	for (size_t bitidx = 0, optr = 0; bitidx < (datastream->size() * 8 - 1); bitidx++)
+	for (size_t bitidx = 1, optr = 0; bitidx < bitlen; bitidx++)
 	{
 		switch (baud)
 		{
@@ -102,19 +102,18 @@ void fecEncodeBits(std::vector<byte>* datastream, size_t baud)
 		}
 
 		fec_buffer = (fec_buffer >> 1) | 1;
-		fec_buffer |= ((valbuf[0] & 0x80) >> 1) & fec_mask;
-		valbuf[0] <<= 1;
-		valbuf[0] |= (valbuf[1] & 0x80) >> 7;
-		valbuf[1] <<= 1;
+		fec_buffer |= ((valbuf & 0x80) >> 1) & fec_mask;
+		valbuf <<= 1;
+		
 
 
 		if ((bitidx % 8) == 0 && bitidx > 0 && (bitidx / 8 == datastream->size() - 1))
 		{
-			valbuf[1] = datastream->at(bitidx / 8);
+			valbuf = datastream->at(bitidx / 8);
 		}
 		else if ((bitidx % 8) == 0 && bitidx > 0)
 		{
-			valbuf[1] = datastream->at(bitidx / 8 + 1);
+			valbuf = datastream->at(bitidx / 8 + 1);
 		}
 	}
 
@@ -122,4 +121,6 @@ void fecEncodeBits(std::vector<byte>* datastream, size_t baud)
 	datastream->resize(fec_out.size());
 
 	*datastream = fec_out;
+	bitlen *= outsize;
+	return bitlen;
 }
