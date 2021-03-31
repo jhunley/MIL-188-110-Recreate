@@ -173,7 +173,7 @@ void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len 
 		temp[0] |= tempmask[0];
 		temp[(z / 8) - 1] |= tempmask[1];
 
-		std::copy(std::begin(temp), std::end(temp), std::begin(*datastream) + i);
+		std::copy(std::begin(temp), std::end(temp), std::begin(*datastream) + (i / 8));
 	}
 
 	return;
