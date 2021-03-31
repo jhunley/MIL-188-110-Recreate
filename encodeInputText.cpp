@@ -15,7 +15,7 @@ size_t encodeInputText(std::vector<byte>* datastream, size_t inter_len)
 	{
 		additionalEl++;
 	}
-	size_t outlen = ((bitlen / 8) + ((bitlen % 8 != 0) ? 1 : 0) + (additionalEl / 8) + ((additionalEl % 8 != 0) ? 1 : 0)) * sizeof(byte);
+	size_t outlen = ((bitlen + additionalEl) / 8) + (((bitlen + additionalEl) % 8 != 0) ? 1 : 0);
 	bitlen += additionalEl;
 
 	datastream->insert(datastream->end(), &EOM[0], &EOM[39]);
