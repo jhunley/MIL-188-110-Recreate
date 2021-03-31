@@ -12,7 +12,7 @@ size_t fecEncodeBits(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 	byte p1tmp, p2tmp, p1out, p2out;
 	size_t outsize = 1;
 
-	switch (baud)
+	switch (baud) // The encoding method is slightly different depending on the mode selected.
 	{
 	case 75:
 	case 600:
@@ -37,13 +37,13 @@ size_t fecEncodeBits(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 
 	case 4800:
 	{
-		return bitlen;
+		return bitlen; // 4800-baud mode does not change the input stream.
 	}
 	}
 
-	std::vector<byte> fec_out(((bitlen * outsize) / 8) + (((bitlen * outsize) % 8 != 0) ? 1 : 0));
+	std::vector<byte> fec_out(((bitlen * outsize) / 8) + (((bitlen * outsize) % 8 != 0) ? 1 : 0)); // we will swap pointers with the input stream when we're done, making it look in-place.
 
-	valbuf = datastream->at(0);
+	valbuf = datastream->at(0); // sneaky extra buffer to help load the actual buffer
 
 	/*
 					HERE BE DRAGONS
@@ -53,14 +53,14 @@ size_t fecEncodeBits(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 					education, foresight, or wisdom. Proceed with caution.
 	*/
 
-	fec_buffer = fec_buffer & ((valbuf & 0x80) >> 1) | 1;
-	valbuf <<= 1;
+	fec_buffer = fec_buffer & ((valbuf & 0x80) >> 1) | 1; // The FEC buffer is only seven bits long, and the LSB is always set. The new bit gets inserted directly into the 7th (MSB) spot.
+	valbuf <<= 1; // and move the sneaky buffer for next round
 
 	for (size_t bitidx = 1, optr = 0; bitidx < bitlen; bitidx++)
 	{
 		switch (baud)
 		{
-		case 150:
+		case 150: // I'm abusing case fallthrough here to achieve the different encodings, don't worry it's on purpose
 			p1tmp = fec_buffer & p1mask;
 			p2tmp = fec_buffer & p2mask;
 
@@ -101,26 +101,26 @@ size_t fecEncodeBits(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 			optr += 2;
 		}
 
-		fec_buffer = (fec_buffer >> 1) | 1;
+		fec_buffer = (fec_buffer >> 1) | 1; // loading the next bit into the buffer
 		fec_buffer |= ((valbuf & 0x80) >> 1) & fec_mask;
 		valbuf <<= 1;
 		
 
 
-		if ((bitidx % 8) == 0 && bitidx > 0 && (bitidx / 8 == datastream->size() - 1))
+		if ((bitidx % 8) == 0 && bitidx > 0 && (bitidx / 8 == datastream->size() - 1)) // every 8 rounds, reload the sneaky buffer from the input stream.
 		{
 			valbuf = datastream->at(bitidx / 8);
 		}
-		else if ((bitidx % 8) == 0 && bitidx > 0)
+		else if ((bitidx % 8) == 0 && bitidx > 0) // the if statement is needed because of the shenanigans we use to index with bit granularity. More research needed to make sure it's bug-free.
 		{
 			valbuf = datastream->at(bitidx / 8 + 1);
 		}
 	}
 
-	datastream->clear();
-	datastream->resize(fec_out.size());
+	datastream->clear(); // We don't need the input stream any more; get rid of it to save space.
+	datastream->~vector();
 
-	*datastream = fec_out;
-	bitlen *= outsize;
+	*datastream = fec_out; // and return the output array like nothing happened.
+	bitlen *= outsize; // update bitlen for the rest of the chain
 	return bitlen;
 }
