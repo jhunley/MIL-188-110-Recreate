@@ -4,6 +4,6 @@
 #include <vector>
 #include "Types.h"
 
-void fecEncodeBits(std::vector<byte>* datastream, size_t baud);
+size_t fecEncodeBits(std::vector<byte>* datastream, size_t baud, size_t bitlen);
 
 #endif
