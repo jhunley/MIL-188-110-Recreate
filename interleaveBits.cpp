@@ -6,7 +6,7 @@
 
 void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols, byte offset)
 {
-	if (chunk->size() != ((numcols * numrows) / 8) + 1) // bounds check!
+	if (chunk->size() != ((numcols * numrows) / 8) + (((numcols * numrows) % 8 == 0) ? 0 : 1)) // bounds check!
 	{
 		std::cerr << "The input chunk doesn't fit in the interleave matrix. How did you do this?\n\n";
 		exit(1);
@@ -57,7 +57,7 @@ void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len 
 {
 	size_t numrows, numcols;
 	byte tempmask[2];
-	byte offset;
+	byte boffset, eoffset;
 
 	switch (baud) // the interleave pattern changes depending on the selected parameters.
 	{
@@ -181,24 +181,25 @@ void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len 
 
 	NOTE!!!
 
-	This is looking really wonky, and doesn't currently work.
+	This is looking really wonky, and MIGHT work.
 	*/
 
 	for (size_t i = 0; i < bitlen; i += z)
 	{
-		temp = std::vector<byte>(datastream->begin() + (i / 8), datastream->begin() + ((((i + z) / 8) == (datastream->size() - 1)) ? 1 : 0));
-		offset = (i % 8);
+		std::copy(datastream->begin() + ((i / 8) + ((i % 8 != 0) ? 1 : 0)), datastream->begin() + (((i + z) / 8) + (((i + z) % 8 != 0) ? 1 : 0)), temp.begin());
+		boffset = (i % 8);
+		eoffset = ((i + z) % 8);
 
-		temp[0] &= ((i % 8 == 0) ? 0xff : ~(0x80 >> ((i % 8) - 1)));
-		temp[(z / 8)] &= ((i % 8 == 0) ? 0xff : (0x80 >> ((i % 8) - 1)));
+		temp[0] &= ((boffset == 0) ? 0xff : ~((char)0x80 >> (boffset - 1)));
+		temp[(z / 8) + ((z % 8 == 0) ? -1 : 0)] &= ((eoffset == 0) ? 0xff : ((char)0x80 >> (eoffset - 1))); // We're not allowed to have any simple things in life
 
-		interleave_chunk(&temp, numrows, numcols, offset);
+		interleave_chunk(&temp, numrows, numcols, boffset);
 
-		tempmask[0] = datastream->at((i / 8)) & ((i % 8 == 0) ? 0 : (0x80 >> ((i % 8) - 1)));
-		tempmask[1] = datastream->at(((i + z) / 8) + 1) & (((i + z) % 8 == 0) ? 0 : ~(0x80 >> (((i + z) % 8) - 1)));
+		tempmask[0] = datastream->at((i / 8)) & ((boffset == 0) ? 0 : ((char)0x80 >> (boffset - 1)));
+		tempmask[1] = datastream->at((((i + z) / 8) + (((i + z) % 8 != 0) ? 1 : 0) + (((i + z) / 8 == datastream->size()) ? -1 : 0))) & ((eoffset == 0) ? 0 : ~((char)0x80 >> (eoffset - 1))); // ouch
 
 		temp[0] |= tempmask[0];
-		temp[(z / 8)] |= tempmask[1];
+		temp[(z / 8) + ((z % 8 == 0) ? -1 : 0)] |= tempmask[1]; // ever
 
 		std::copy(std::begin(temp), std::end(temp), std::begin(*datastream) + (i / 8));
 	}
