@@ -41,7 +41,7 @@ size_t fecEncodeBits(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 	}
 	}
 
-	std::vector<byte> fec_out(((bitlen * outsize) / 8) + (((bitlen * outsize) % 8 != 0) ? 1 : 0)); // we will swap pointers with the input stream when we're done, making it look in-place.
+	std::vector<byte> fec_out(((bitlen * outsize) / 8) + (((bitlen * outsize) % 8 != 0) ? 1 : 0)); // we will swap pointers with the input stream when we're done, making it look in-place. < You can't do that you idiot, the stack gets torn down
 
 	valbuf = datastream->at(0); // sneaky extra buffer to help load the actual buffer
 
@@ -53,7 +53,7 @@ size_t fecEncodeBits(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 					education, foresight, or wisdom. Proceed with caution.
 	*/
 
-	fec_buffer = fec_buffer & ((valbuf & 0x80) >> 1) | 1; // The FEC buffer is only seven bits long, and the LSB is always set. The new bit gets inserted directly into the 7th (MSB) spot.
+	fec_buffer |= (((valbuf & 0x80) >> 1) | 1); // The FEC buffer is only seven bits long, and the LSB is always set. The new bit gets inserted directly into the 7th (MSB) spot.
 	valbuf <<= 1; // and move the sneaky buffer for next round
 
 	for (size_t bitidx = 1, optr = 0; bitidx < bitlen; bitidx++)
@@ -107,20 +107,20 @@ size_t fecEncodeBits(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 		
 
 
-		if ((bitidx % 8) == 0 && bitidx > 0 && (bitidx / 8 == datastream->size() - 1)) // every 8 rounds, reload the sneaky buffer from the input stream.
+		if ((bitidx % 8) == 7 && (bitidx / 8 == datastream->size() - 1)) // every 8 rounds, reload the sneaky buffer from the input stream.
 		{
 			valbuf = datastream->at(bitidx / 8);
 		}
-		else if ((bitidx % 8) == 0 && bitidx > 0) // the if statement is needed because of the shenanigans we use to index with bit granularity. More research needed to make sure it's bug-free.
+		else if ((bitidx % 8) == 7) // the if statement is needed because of the shenanigans we use to index with bit granularity. More research needed to make sure it's bug-free.
 		{
 			valbuf = datastream->at(bitidx / 8 + 1);
 		}
 	}
 
-	datastream->clear(); // We don't need the input stream any more; get rid of it to save space.
-	datastream->~vector();
+	datastream->clear();
+	datastream->resize(fec_out.size());
 
-	*datastream = fec_out; // and return the output array like nothing happened.
+	std::copy(fec_out.begin(), fec_out.end(), datastream->begin()); // move the changed data back
 	bitlen *= outsize; // update bitlen for the rest of the chain
 	return bitlen;
 }
