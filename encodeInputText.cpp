@@ -11,9 +11,12 @@ size_t encodeInputText(std::vector<byte>* datastream, size_t inter_len)
 
 	size_t additionalEl = 0;
 
-	while ((bitlen + additionalEl) % inter_len != 0) // add additional padding to make the stream evenly divisible by the interleaver
+	if (inter_len != 0)
 	{
-		additionalEl++;
+		while ((bitlen + additionalEl) % inter_len != 0) // add additional padding to make the stream evenly divisible by the interleaver
+		{
+			additionalEl++;
+		}
 	}
 
 	/*
