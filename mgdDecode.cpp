@@ -3,10 +3,10 @@
 #include "mgdDecode.h"
 #include "Types.h"
 
-void mgdDecode(std::vector<byte>* datastream, size_t baud, size_t bitlen)
+byte mgdDecode(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 {
 	byte temp;
-	size_t idx = 0;
+	size_t idx = 0, numGroups = 0;
 	byte idxInc;
 
 	switch (baud)
@@ -22,7 +22,9 @@ void mgdDecode(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 		break;
 
 	default:
-		return;
+	{
+                idxInc = 1;
+                goto normalize;
 	}
 	
 	while ((idx + idxInc) < bitlen)
@@ -81,7 +83,15 @@ void mgdDecode(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 		setBitVal(datastream, idx + idxInc, temp & 1);
 
 		idx += idxInc;
+                numGroups++;
 	}
+
+normalize:
+        if(numGroups == 0) numGroups = bitlen;
+
+        if(idxInc == 3) return bitlen;
+
+        
 
 	return;
 }
