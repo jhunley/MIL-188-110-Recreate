@@ -22,9 +22,8 @@ byte mgdDecode(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 		break;
 
 	default:
-	{
-                idxInc = 1;
-                goto normalize;
+		idxInc = 1;
+		goto normalize;
 	}
 	
 	while ((idx + idxInc) < bitlen)
@@ -73,25 +72,47 @@ byte mgdDecode(std::vector<byte>* datastream, size_t baud, size_t bitlen)
 			exit(1);
 		}
 
-		setBitVal(datastream, idx, (temp & (1 << idxInc)));
+		setBitVal(datastream, idx, (temp & (1 << (idxInc - 1))));
 
 		if (idxInc == 3)
 		{
 			setBitVal(datastream, idx + 1, ((temp & 2) >> 1));
 		}
 
-		setBitVal(datastream, idx + idxInc, temp & 1);
+		setBitVal(datastream, idx + idxInc - 1, temp & 1);
 
 		idx += idxInc;
-                numGroups++;
+		numGroups++;
 	}
 
-normalize:
-        if(numGroups == 0) numGroups = bitlen;
-
-        if(idxInc == 3) return bitlen;
-
-        
-
-	return;
+	normalize:
+	/* The plan here is to convert all the bitgroups, regardless of their length
+		above, to three bits because the scrambler module needs them regardless
+		of mode. */
+		if (idxInc == 3) return bitlen;
+		if (idxInc == 1)
+		{
+			numGroups = bitlen;
+		}
+		
+		std::vector<byte> mgd_out(((numGroups * 3) / 8) + (((numGroups * 3) % 8 != 0) ? 1 : 0));
+		
+		for (size_t i = 0, optr = 0; i < bitlen, optr < (numGroups * 3); i += idxInc, optr += 3)
+		{
+			temp = (idxInc == 2) ? (getBitVal(*datastream, i) << 1) : getBitVal(*datastream, i);
+			
+			if (idxInc == 2) temp |= getBitVal(*datastream, i + 1);
+			
+			setBitVal(&mgd_out, optr, 0);
+			setBitVal(&mgd_out, optr + 1, temp >> 1);
+			setBitVal(&mgd_out, optr + 2, temp & 1);
+		}
+		
+		datastream->clear();
+		datastream->resize(mgd_out. size());
+		std::copy(mgd_out. begin(), mgd_out.end(), datastream->begin());
+		
+		bitlen = numGroups * 3;
+		
+	return bitlen;
 }
