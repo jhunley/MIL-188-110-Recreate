@@ -1,3 +1,5 @@
+import numpy as np
+
 def channelMap(indata, Bd, inter_len, frqmode, data_type):
   # Map the input symbols to their final forms, adding known data probes (commented below)
   # and repeat symbols where necessary. We're almost done, woohoo!
