@@ -1,4 +1,5 @@
 import numpy as np
+PreambleRandomizerSeq = [7, 4, 3, 0, 5, 1, 5, 0, 2, 2, 1, 1, 5, 7, 4, 3, 5, 0, 2, 6, 2, 1, 6, 2, 0, 0, 5, 0, 5, 2, 6, 6]
 
 def PreambleGenerate(bps, interleave_len, dtyp = "Data"):
 	if interleave_len == "Z" or interleave_len == "S":
