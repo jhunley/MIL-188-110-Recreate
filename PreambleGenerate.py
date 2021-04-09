@@ -1,3 +1,5 @@
+import numpy as np
+
 def PreambleGenerate(bps, interleave_len, dtyp = "Data"):
 	if interleave_len == "Z" or interleave_len == "S":
 		count = 2
