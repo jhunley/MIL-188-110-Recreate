@@ -1,26 +1,13 @@
 import numpy as np
 import scipy.io.wavfile as wavfile
-import PreambleGenerate
-import EncodeInputText
-import FECEncodeBits
-import InterleaveBits
-import channelMap
-import ScrambleBits
-import ConvertToTones
-
-samplerate = 384000
-PreambleRandomizerSeq = [7, 4, 3, 0, 5, 1, 5, 0, 2, 2, 1, 1, 5, 7, 4, 3, 5, 0, 2, 6, 2, 1, 6, 2, 0, 0, 5, 0, 5, 2, 6, 6]
-tone0, tone1, tone2, tone3, tone4, tone5, tone6, tone7 = [], [], [], [], [], [], [], []
-f_c = 1800
-for i in range(160):
-	tone0.append(np.cos(2*np.pi*f_c*i/samplerate))
-	tone1.append(np.cos(2*np.pi*f_c*i/samplerate + 45))
-	tone2.append(np.cos(2*np.pi*f_c*i/samplerate + 90))
-	tone3.append(np.cos(2*np.pi*f_c*i/samplerate + 135))
-	tone4.append(np.cos(2*np.pi*f_c*i/samplerate + 180))
-	tone5.append(np.cos(2*np.pi*f_c*i/samplerate + 225))
-	tone6.append(np.cos(2*np.pi*f_c*i/samplerate + 270))
-	tone7.append(np.cos(2*np.pi*f_c*i/samplerate + 315))
+from PreambleGenerate import PreambleGenerate
+from EncodeInputText import EncodeInputText
+from FECEncodeBits import FECEncodeBits
+from InterleaveBits import InterleaveData
+from MGDDecode import MGD_Decode
+from channelMap import channelMap
+from ScrambleBits import ScrambleBits
+from ConvertToTones import convertToTones
 
 def main(instring, Baud, interleave_length, Data_type, frequency_mode, EOMCycles):
         # The main wrapper function.
@@ -57,12 +44,14 @@ def main(instring, Baud, interleave_length, Data_type, frequency_mode, EOMCycles
                         interset = "Z"
                 elif interleave_length == "s":
                         interset = "S"
-                else interleave_length == "L"
+                else:
+                        interset = "L"
         if interleave_length == "z":
                 interset = "Z"
         elif interleave_length == "s":
                 interset = "S"
-        else interleave_length == "L"
+        else:
+                interset = "L"
 
         if Data_type not in datalist:
                 raise ValueError("Invalid data setting detected.")
