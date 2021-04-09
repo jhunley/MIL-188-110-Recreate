@@ -1,3 +1,5 @@
+import numpy as np
+
 def EncodeInputText(instring, inter_len=90, EOMCycles=1):
 	# Converts an ASCII string to its bitwise representation and
 	# prepares it for the signal chain. inter_len describes the length
