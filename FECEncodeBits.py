@@ -1,3 +1,5 @@
+import numpy as np
+
 def FECEncodeBits(inArray,Bd,fqmode='fixed'):
 	# Returns a (much longer) FEC-encoded bit array from an input bit array
 	# inArray is the input bitstream
