@@ -6,4 +6,5 @@ def ScrambleBits(inArray):
 	scrambld = []
 	for i in range(len(inArray)):
 		scrambld.append(inArray[i] ^ scramble_temp[i])
+	scrambld = np.array(scrambld, dtype=int)
 	return scrambld
