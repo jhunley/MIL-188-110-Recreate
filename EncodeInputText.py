@@ -1,10 +1,10 @@
 def EncodeInputText(instring, inter_len=90, EOMCycles=1):
-	'''Converts an ASCII string to its bitwise representation and
-	prepares it for the signal chain. inter_len describes the length
-	in bits of a single interleaver chunk, which the output array should
-	be a multiple of. EOMCycles is how many times the signal should
-	send the EOM message before ending. This module should not be called
-	by the user.'''
+	# Converts an ASCII string to its bitwise representation and
+	# prepares it for the signal chain. inter_len describes the length
+	# in bits of a single interleaver chunk, which the output array should
+	# be a multiple of. EOMCycles is how many times the signal should
+	# send the EOM message before ending. This module should not be called
+	# by the user.
 	
         asciitemp = []
         for char in instring:
