@@ -1,3 +1,5 @@
+import numpy as np
+
 def MGD_Decode(indata, Bd, frqmode):
     # Convert the input bitgroups to their Gray form, so that
     # receive errors only result in one bit in err.
