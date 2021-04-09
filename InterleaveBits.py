@@ -1,3 +1,5 @@
+import numpy as np
+
 def InterleaveChunk(inchunk, numrows, numcols, rowInc,colDec):
 	# Interleave the input chunk. You shouldn't be calling this function manually.
 	# MIL-STD-188-110A specifies a two-matrix approach, with different loading
