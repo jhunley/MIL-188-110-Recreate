@@ -1,3 +1,5 @@
+import numpy as np
+
 def convertToTones(message):
 	# Ah, finally, the last step (almost). This is dead simple.
 	# Had to do it this way because numpy append and concatenate is SO SLOOOW
