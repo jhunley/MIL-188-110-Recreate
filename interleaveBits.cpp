@@ -4,7 +4,7 @@
 #include "Types.h"
 #include "interleaveBits.h"
 
-void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols, byte offset)
+void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols, byte offset, size_t rowInc, size_t colDec)
 {
 	if (chunk->size() != ((numcols * numrows) / 8) + (((numcols * numrows) % 8 == 0) ? 0 : 1)) // bounds check!
 	{
@@ -22,7 +22,7 @@ void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols, 
 		while (count < numrows)
 		{
 			setBitVal(&temp, (colnum + numcols * rownum), getBitVal(*chunk, i + offset));
-			rownum = (rownum + 7) % numrows;
+			rownum = (rownum + rowInc) % numrows;
 			count++; i++;
 		}
 
@@ -43,7 +43,7 @@ void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols, 
 		{
 			setBitVal(chunk, i + offset, getBitVal(temp, (colnum + numcols * rownum)));
 			rownum++;
-			colnum = (colnum - 7) % numcols;
+			colnum = (colnum - colDec) % numcols;
 			i++;
 		}
 
@@ -55,7 +55,7 @@ void interleave_chunk(std::vector<byte>* chunk, size_t numrows, size_t numcols, 
 
 void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len chunklen, size_t bitlen)
 {
-	size_t numrows, numcols;
+	size_t numrows, numcols, rowInc, colDec;
 	byte tempmask[2];
 	byte boffset, eoffset;
 
@@ -73,11 +73,15 @@ void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len 
 		case _short:
 			numcols = 18;
 			numrows = 40;
+			rowInc = 9;
+			colDec = 17;
 			break;
 
 		case _long:
 			numcols = 144;
 			numrows = 40;
+			rowInc = 9;
+			colDec = 17;
 			break;
 		}
 		break;
@@ -93,11 +97,15 @@ void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len 
 		case _short:
 			numcols = 9;
 			numrows = 10;
+			rowInc = 7;
+			colDec = 7;
 			break;
 
 		case _long:
 			numcols = 36;
 			numrows = 20;
+			rowInc = 7;
+			colDec = 7;
 			break;
 		}
 		break;
@@ -113,11 +121,15 @@ void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len 
 		case _short:
 			numcols = 36;
 			numrows = 40;
+			rowInc = 9;
+			colDec = 17;
 			break;
 
 		case _long:
 			numcols = 288;
 			numrows = 40;
+			rowInc = 9;
+			colDec = 17;
 			break;
 		}
 		break;
@@ -133,11 +145,15 @@ void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len 
 		case _short:
 			numcols = 72;
 			numrows = 40;
+			rowInc = 9;
+			colDec = 17;
 			break;
 
 		case _long:
 			numcols = 576;
 			numrows = 40;
+			rowInc = 9;
+			colDec = 17;
 			break;
 		}
 		break;
@@ -181,7 +197,7 @@ void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len 
 
 	NOTE!!!
 
-	This is looking really wonky, and MIGHT work.
+	This is looking really wonky, and doesn't currently work. (Line 215 fails when i == z and bitlen is a multiple of 8)
 	*/
 
 	for (size_t i = 0; i < bitlen; i += z)
@@ -193,10 +209,10 @@ void interleave_data(std::vector<byte>* datastream, size_t baud, interleave_len 
 		temp[0] &= ((boffset == 0) ? 0xff : ~((char)0x80 >> (boffset - 1)));
 		temp[(z / 8) + ((z % 8 == 0) ? -1 : 0)] &= ((eoffset == 0) ? 0xff : ((char)0x80 >> (eoffset - 1))); // We're not allowed to have any simple things in life
 
-		interleave_chunk(&temp, numrows, numcols, boffset);
+		interleave_chunk(&temp, numrows, numcols, boffset, rowInc, colDec);
 
 		tempmask[0] = datastream->at((i / 8)) & ((boffset == 0) ? 0 : ((char)0x80 >> (boffset - 1)));
-		tempmask[1] = datastream->at((((i + z) / 8) + (((i + z) % 8 != 0) ? 1 : 0) + (((i + z) / 8 == datastream->size()) ? -1 : 0))) & ((eoffset == 0) ? 0 : ~((char)0x80 >> (eoffset - 1))); // ouch
+		tempmask[1] = datastream->at((((i + z) / 8) + (((i + z) % 8 != 0) ? 1 : 0) + (((i + z) / 8 + 1 == datastream->size()) ? -1 : 0))) & ((eoffset == 0) ? 0 : ~((char)0x80 >> (eoffset - 1))); // ouch, and it doesn't even work the entire time!
 
 		temp[0] |= tempmask[0];
 		temp[(z / 8) + ((z % 8 == 0) ? -1 : 0)] |= tempmask[1]; // ever
