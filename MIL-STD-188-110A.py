@@ -40,7 +40,7 @@ def PreambleGenerate(bps, interleave_len, dtyp="Data"):
 
         data_array = np.array([])
 
-        while count > 0:
+        while count >= 0:
 
             data_array = np.append(data_array, [0b000,0b001,0b011,0b000,0b001,0b011,0b001,0b010,0b000]) # [0, 1, 3, 0, 1, 3, 1, 2, 0] begins all preambles
 
